@@ -148,16 +148,16 @@ export function Dashboard() {
     const handleSave = () => {
         api.createDocument(formData)
             .then((res) => {
-            if (!res.ok) throw new Error("Error en el servidor");
-            return res.json();
-        })
-        .then((newDocument: DocumentApproval) => {
-            setFormData(newDocument);
-            setIsEditMode(false);
-        })
-        .catch((error) => {
-            console.error("Error creating document:", error);
-        });
+                if (!res.ok) throw new Error("Error en el servidor");
+                return res.json();
+            })
+            .then((newDocument: DocumentApproval) => {
+                setFormData(newDocument);
+                setIsEditMode(false);
+            })
+            .catch((error) => {
+                console.error("Error creating document:", error);
+            });
 
         setIsEditMode(false)
     }
@@ -167,44 +167,44 @@ export function Dashboard() {
     }
 
     const handleSubmit = () => {
-    if (!formData.id) {
-        console.error("Document ID is missing. Cannot submit document.");
-        return;
-    }
+        if (!formData.id) {
+            console.error("Document ID is missing. Cannot submit document.");
+            return;
+        }
 
-    // 1. Llamamos a la API primero
-    api.submitDocument(formData.id)
-        .then((updatedDocFromServer) => {
-            // 2. Si la API responde bien, actualizamos la lista de documentos
-            // Usamos lo que devuelve el servidor porque el servidor calculó el estado real (PENDING_APPROVAL, etc.)
-            setDocuments(prev => 
-                prev.map(doc => doc.id === formData.id ? updatedDocFromServer : doc)
-            );
+        // 1. Llamamos a la API primero
+        api.submitDocument(formData.id)
+            .then((updatedDocFromServer) => {
+                // 2. Si la API responde bien, actualizamos la lista de documentos
+                // Usamos lo que devuelve el servidor porque el servidor calculó el estado real (PENDING_APPROVAL, etc.)
+                setDocuments(prev =>
+                    prev.map(doc => doc.id === formData.id ? updatedDocFromServer : doc)
+                );
 
-            setCreateDialogOpen(false);
-            setIsEditMode(true); 
-            
-            setFormData({
-                id: undefined,
-                supplierName: "",
-                amount: 0,
-                date: new Date().toISOString().split("T")[0],
-                status: "Draft",
-                description: "",
-                approvalLevelRequired: undefined,
-                currentApprovalStep: undefined
+                setCreateDialogOpen(false);
+                setIsEditMode(true);
+
+                setFormData({
+                    id: undefined,
+                    supplierName: "",
+                    amount: 0,
+                    date: new Date().toISOString().split("T")[0],
+                    status: "Draft",
+                    description: "",
+                    approvalLevelRequired: undefined,
+                    currentApprovalStep: undefined
+                });
+
+                console.log("Documento enviado con éxito a SAP Workflow");
+            })
+            .catch((error) => {
+                // Si algo falla, no cerramos el diálogo para que el usuario pueda reintentar
+                console.error("Error al enviar el documento:", error);
+                alert("No se pudo iniciar el workflow de aprobación. Revisa la conexión con el servidor.");
             });
 
-            console.log("Documento enviado con éxito a SAP Workflow");
-        })
-        .catch((error) => {
-            // Si algo falla, no cerramos el diálogo para que el usuario pueda reintentar
-            console.error("Error al enviar el documento:", error);
-            alert("No se pudo iniciar el workflow de aprobación. Revisa la conexión con el servidor.");
-        });
-        
         handleRefresh()
-};
+    };
 
     const handleRowClick = (doc: DocumentApproval) => {
         setSelectedDocument(doc)
@@ -416,23 +416,26 @@ export function Dashboard() {
                             </div>
 
                             <div className="grid gap-1">
-                                <Label className="text-muted-foreground">Proveedor (Supplier)</Label>
+                                <Label className="text-muted-foreground">Supplier</Label>
                                 <p className="font-medium">{selectedDocument.supplierName}</p>
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="grid gap-1">
-                                    <Label className="text-muted-foreground">Importe (Amount)</Label>
+                                    <Label className="text-muted-foreground">Amount</Label>
                                     <p className="font-mono font-medium">
                                         {formatCurrency(selectedDocument.amount)}
                                     </p>
                                 </div>
                                 <div className="grid gap-1">
-                                    <Label className="text-muted-foreground">Fecha (Date)</Label>
+                                    <Label className="text-muted-foreground">Date</Label>
                                     <p className="font-medium">{formatDate(selectedDocument.date)}</p>
                                 </div>
                             </div>
-
+                            <div className="grid gap-1">
+                                <Label className="text-muted-foreground">Description</Label>
+                                <p className="font-medium">{selectedDocument.description || ""}</p>
+                            </div>
                             <div className="border-t pt-4">
                                 <p className="mb-3 text-sm font-medium text-foreground">Approval Information</p>
                                 <div className="grid grid-cols-2 gap-4">

@@ -44,6 +44,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { api } from "@/lib/api"
 
 type DocumentStatus = "Draft" | "Submitted" | "Auto approved" | "Pending" | "Approved" | "Rejected"
 
@@ -57,62 +58,62 @@ interface Document {
   currentApprovalStep?: number
 }
 
-const initialDocuments: Document[] = [
-  {
-    id: 1,
-    supplierName: "Acme Corporation",
-    amount: 15000,
-    date: "2026-04-01",
-    status: "Approved",
-    approvalLevelRequired: 2,
-    currentApprovalStep: 2,
-  },
-  {
-    id: 2,
-    supplierName: "Global Supplies Ltd",
-    amount: 8500,
-    date: "2026-04-03",
-    status: "Pending",
-    approvalLevelRequired: 3,
-    currentApprovalStep: 1,
-  },
-  {
-    id: 3,
-    supplierName: "Tech Solutions Inc",
-    amount: 2500,
-    date: "2026-04-05",
-    status: "Auto approved",
-    approvalLevelRequired: 1,
-    currentApprovalStep: 1,
-  },
-  {
-    id: 4,
-    supplierName: "Industrial Parts Co",
-    amount: 45000,
-    date: "2026-04-07",
-    status: "Submitted",
-    approvalLevelRequired: 4,
-    currentApprovalStep: 0,
-  },
-  {
-    id: 5,
-    supplierName: "Office Essentials",
-    amount: 750,
-    date: "2026-04-08",
-    status: "Draft",
-    approvalLevelRequired: 1,
-    currentApprovalStep: 0,
-  },
-  {
-    id: 6,
-    supplierName: "Logistics Express",
-    amount: 12000,
-    date: "2026-04-09",
-    status: "Rejected",
-    approvalLevelRequired: 2,
-    currentApprovalStep: 1,
-  },
-]
+// const initialDocuments: Document[] = [
+//   {
+//     id: 1,
+//     supplierName: "Acme Corporation",
+//     amount: 15000,
+//     date: "2026-04-01",
+//     status: "Approved",
+//     approvalLevelRequired: 2,
+//     currentApprovalStep: 2,
+//   },
+//   {
+//     id: 2,
+//     supplierName: "Global Supplies Ltd",
+//     amount: 8500,
+//     date: "2026-04-03",
+//     status: "Pending",
+//     approvalLevelRequired: 3,
+//     currentApprovalStep: 1,
+//   },
+//   {
+//     id: 3,
+//     supplierName: "Tech Solutions Inc",
+//     amount: 2500,
+//     date: "2026-04-05",
+//     status: "Auto approved",
+//     approvalLevelRequired: 1,
+//     currentApprovalStep: 1,
+//   },
+//   {
+//     id: 4,
+//     supplierName: "Industrial Parts Co",
+//     amount: 45000,
+//     date: "2026-04-07",
+//     status: "Submitted",
+//     approvalLevelRequired: 4,
+//     currentApprovalStep: 0,
+//   },
+//   {
+//     id: 5,
+//     supplierName: "Office Essentials",
+//     amount: 750,
+//     date: "2026-04-08",
+//     status: "Draft",
+//     approvalLevelRequired: 1,
+//     currentApprovalStep: 0,
+//   },
+//   {
+//     id: 6,
+//     supplierName: "Logistics Express",
+//     amount: 12000,
+//     date: "2026-04-09",
+//     status: "Rejected",
+//     approvalLevelRequired: 2,
+//     currentApprovalStep: 1,
+//   },
+// ]
 
 function getStatusBadge(status: DocumentStatus) {
   const config: Record<DocumentStatus, { className: string; icon: React.ReactNode }> = {
@@ -153,11 +154,22 @@ function getStatusBadge(status: DocumentStatus) {
 }
 
 export function Dashboard() {
-  const [documents, setDocuments] = useState<Document[]>(initialDocuments)
+  const [documents, setDocuments] = useState<Document[]>([])
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false)
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
   const [isEditMode, setIsEditMode] = useState(true)
+
+  React.useEffect(() => {
+  api.getDocuments()
+    .then((data) => {
+      setDocuments(data);
+      console.log("Fetched documents:", data);
+    })
+    .catch((error) => {
+      console.error("Error in document loading:", error);
+    });
+}, []);
 
   // Form state for create dialog
   const [formData, setFormData] = useState<Document>({

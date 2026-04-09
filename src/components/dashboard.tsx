@@ -14,6 +14,7 @@ import {
     AlertCircle,
     FileCheck,
     FileClock,
+    RefreshCcw,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -132,6 +133,18 @@ export function Dashboard() {
         setCreateDialogOpen(true)
     }
 
+    const handleRefresh = () => {
+        api.getDocuments()
+            .then((data) => {
+                setDocuments(data);
+                console.log("Fetched documents:", data);
+            })
+            .catch((error) => {
+                console.error("Error in document loading:", error);
+            });
+    }
+
+
     const handleSave = () => {
         api.createDocument(formData)
             .then((res) => {
@@ -189,6 +202,8 @@ export function Dashboard() {
             console.error("Error al enviar el documento:", error);
             alert("No se pudo iniciar el workflow de aprobación. Revisa la conexión con el servidor.");
         });
+        
+        handleRefresh()
 };
 
     const handleRowClick = (doc: DocumentApproval) => {
@@ -238,10 +253,16 @@ export function Dashboard() {
                                 Manage and track document approval workflows
                             </p>
                         </div>
-                        <Button onClick={handleOpenCreate}>
-                            <Plus className="size-4" />
-                            Create
-                        </Button>
+                        <div className="flex gap-4">
+                            <Button variant={"secondary"} onClick={handleRefresh}>
+                                <RefreshCcw className="size-4" />
+                                Refresh
+                            </Button>
+                            <Button onClick={handleOpenCreate}>
+                                <Plus className="size-4" />
+                                Create
+                            </Button>
+                        </div>
                     </CardHeader>
                     <CardContent>
                         <Table>

@@ -51,27 +51,27 @@ import { DocumentApproval, DocumentStatus } from "./types"
 
 function getStatusBadge(status: DocumentStatus) {
     const config: Record<DocumentStatus, { className: string; icon: React.ReactNode }> = {
-        Draft: {
+        DRAFT: {
             className: "bg-muted text-muted-foreground border-border",
             icon: <FileText className="size-3" />,
         },
-        Submitted: {
+        SUBMITTED: {
             className: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800",
             icon: <Send className="size-3" />,
         },
-        "Auto approved": {
+        AUTO_APPROVED: {
             className: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800",
             icon: <FileCheck className="size-3" />,
         },
-        Pending: {
+        PENDING_APPROVAL: {
             className: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800",
             icon: <Clock className="size-3" />,
         },
-        Approved: {
+        APPROVED: {
             className: "bg-green-100 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800",
             icon: <CheckCircle2 className="size-3" />,
         },
-        Rejected: {
+        REJECTED: {
             className: "bg-red-100 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300 dark:border-red-800",
             icon: <AlertCircle className="size-3" />,
         },
@@ -82,7 +82,7 @@ function getStatusBadge(status: DocumentStatus) {
         icon: <FileText className="size-3" />,
     }
 
-    const label = statusConfig === config.Draft && !Object.prototype.hasOwnProperty.call(config, status)
+    const label = statusConfig === config.DRAFT && !Object.prototype.hasOwnProperty.call(config, status)
         ? status || "Unknown"
         : status
 
@@ -94,12 +94,14 @@ function getStatusBadge(status: DocumentStatus) {
     )
 }
 
+
+
 export function Dashboard() {
     const [documents, setDocuments] = useState<DocumentApproval[]>([])
     const [createDialogOpen, setCreateDialogOpen] = useState(false)
     const [detailsDialogOpen, setDetailsDialogOpen] = useState(false)
     const [selectedDocument, setSelectedDocument] = useState<DocumentApproval | null>(null)
-    const [isEditMode, setIsEditMode] = useState(true)
+    const [isEditMode, setIsEditMode] = useState(true);
 
     React.useEffect(() => {
         api.getDocuments()
@@ -117,7 +119,7 @@ export function Dashboard() {
         supplierName: "",
         amount: 0,
         date: "",
-        status: "Draft",
+        status: "DRAFT",
         description: "",
     })
 
@@ -126,7 +128,7 @@ export function Dashboard() {
             supplierName: "",
             amount: 0,
             date: new Date().toISOString().split("T")[0],
-            status: "Draft",
+            status: "DRAFT",
             description: "",
         })
         setIsEditMode(true)
@@ -146,18 +148,39 @@ export function Dashboard() {
 
 
     const handleSave = () => {
-        api.createDocument(formData)
-            .then((res) => {
-                if (!res.ok) throw new Error("Error en el servidor");
-                return res.json();
-            })
-            .then((newDocument: DocumentApproval) => {
-                setFormData(newDocument);
-                setIsEditMode(false);
-            })
-            .catch((error) => {
-                console.error("Error creating document:", error);
-            });
+        if (formData.status === "DRAFT" && formData.id) {
+            console.log("Updating document with ID:", formData.id);
+            api.updateDocument(formData.id, formData)
+                .then((res) => {
+                    if (!res.ok) throw new Error("Error en el servidor");
+                    return res.json();
+                })
+                .then((newDocument: DocumentApproval) => {
+                    setFormData(newDocument);
+                    setIsEditMode(false);
+                    handleRefresh();
+                })
+                .catch((error) => {
+                    console.error("Error creating document:", error);
+                });
+        } else {
+            console.log("Creating new document");
+            api.createDocument(formData)
+                .then((res) => {
+                    if (!res.ok) throw new Error("Error en el servidor");
+                    return res.json();
+                })
+                .then((newDocument: DocumentApproval) => {
+                    setFormData(newDocument);
+                    setIsEditMode(false);
+                    handleRefresh();
+                })
+                .catch((error) => {
+                    console.error("Error creating document:", error);
+                });
+
+        }
+
 
         setIsEditMode(false)
     }
@@ -189,7 +212,7 @@ export function Dashboard() {
                     supplierName: "",
                     amount: 0,
                     date: new Date().toISOString().split("T")[0],
-                    status: "Draft",
+                    status: "DRAFT",
                     description: "",
                     approvalLevelRequired: undefined,
                     currentApprovalStep: undefined
@@ -208,7 +231,14 @@ export function Dashboard() {
 
     const handleRowClick = (doc: DocumentApproval) => {
         setSelectedDocument(doc)
-        setDetailsDialogOpen(true)
+        console.log(doc.status)
+        if (doc.status === "DRAFT") {
+            setFormData(doc)
+            setIsEditMode(false)
+            setCreateDialogOpen(true)
+        } else {
+            setDetailsDialogOpen(true)
+        }
     }
 
     const formatCurrency = (amount: number) => {

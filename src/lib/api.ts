@@ -14,6 +14,12 @@ export const api = {
       body: JSON.stringify(document),
       headers: { "Content-Type": "application/json" },
     }),
+  updateDocument: (id: number, document: DocumentApproval) =>
+    fetch(`${API_BASE}/documents/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(document),
+      headers: { "Content-Type": "application/json" },
+    }),
   submitDocument: async (id: number): Promise<DocumentApproval> => {
     const response = await fetch(`${API_BASE}/documents/${id}/submit`, {
       method: "POST",

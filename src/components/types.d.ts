@@ -9,4 +9,4 @@ export type DocumentApproval = {
     currentApprovalStep?: number
 };
 
-export type DocumentStatus = "Draft" | "Submitted" | "Auto approved" | "Pending" | "Approved" | "Rejected"
+export type DocumentStatus = "DRAFT" | "SUBMITTED" | "AUTO_APPROVED" | "PENDING_APPROVAL" | "APPROVED" | "REJECTED"
